@@ -13,7 +13,7 @@ def score():
     conn = psycopg2.connect(host='postgres1.ceipocejvkue.us-west-2.rds.amazonaws.com', database='blacksburg', user='blacksburg_read', password='nrv', cursor_factory=RealDictCursor)
     cur = conn.cursor()
     coordinates = json.loads(request.get_data())
-    query = "SELECT * FROM google_route_processing('" + json.dumps(coordinates) + "')"
+    query = "SELECT * FROM google_route_processing('" + json.dumps(coordinates) + "') WHERE gid IS NOT NULL;"
     roads = []
     road_ids = []
     scores = {'day': [], 'night': []}
