@@ -99,14 +99,17 @@ dispatcher.onPost("/score", function(req, res) {
             }
             var scores = {'day': 0, 'night': 0};
             var scoring = {"red": 1, "yellow": 2, "green": 3};
+            var totalLength = 0;
             for (var row in result.rows) {
-                scores['day'] += scoring[result.rows[row]['day_score']];
-                scores['night'] += scoring[result.rows[row]['night_score']];
+                var lineLength = result.rows[row]['mylinedistance'];
+                scores['day'] += scoring[result.rows[row]['day_score']]*lineLength;
+                scores['night'] += scoring[result.rows[row]['night_score']]*lineLength;
+                totalLength += lineLength;
             }
             var response = {
                 "scores": {
-                    "day": scores['day']/result.rowCount,
-                    "night": scores['night']/result.rowCount
+                    "day": scores['day']/totalLength,
+                    "night": scores['night']/totalLength
                 },
                 "roads": result.rows
             };
