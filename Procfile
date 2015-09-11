@@ -1,1 +1,1 @@
-web: gunicorn safe_walk:app --log-file=-
+web: node index.js
