@@ -98,7 +98,7 @@ dispatcher.onPost("/score", function(req, res) {
                 res.end(JSON.stringify({"error":"No results"}))
             }
             var scores = {'day': 0, 'night': 0};
-            var scoring = {"red": 1, "yellow": 2, "green": 3};
+            var scoring = {"red": 0.2, "yellow": 1.5, "green": 3};
             var totalLength = 0;
             for (var row in result.rows) {
                 var lineLength = result.rows[row]['mylinedistance'];
