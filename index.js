@@ -52,7 +52,7 @@ dispatcher.onGet("/inBlacksburg", function(req, res) {
                 done(client);
             }
             console.log(err);
-            res.writeHead(500, {'content-type': 'application/json'});
+            res.writeHead(500, {'content-type': 'application/json','Access-Control-Allow-Origin' : '*'});
             res.end(JSON.stringify({"error":"There was an error querying the database"}));
             return true;
         };
@@ -64,12 +64,10 @@ dispatcher.onGet("/inBlacksburg", function(req, res) {
             if(handleError(err)) return;
             // return the client to the connection pool for other requests to reuse
             done();
-            res.writeHead(200, {'Content-Type': 'application/json'});
+            res.writeHead(200, {'Content-Type': 'application/json','Access-Control-Allow-Origin' : '*'});
             res.end(JSON.stringify(result.rows[0]));
         });
     });
-    res.writeHead(200, {'Content-Type': 'application/json'});
-    res.end(JSON.stringify(response));
 });
 
 //A POST request
@@ -83,7 +81,7 @@ dispatcher.onPost("/score", function(req, res) {
             if(client){
                 done(client);
             }
-            res.writeHead(500, {'content-type': 'application/json'});
+            res.writeHead(500, {'content-type': 'application/json','Access-Control-Allow-Origin' : '*'});
             res.end(JSON.stringify({"error":"There was an error querying the database"}));
             return true;
         };
@@ -95,7 +93,7 @@ dispatcher.onPost("/score", function(req, res) {
             if(handleError(err)) return;
             // return the client to the connection pool for other requests to reuse
             done();
-            res.writeHead(200, {'Content-Type': 'application/json'});
+            res.writeHead(200, {'Content-Type': 'application/json','Access-Control-Allow-Origin' : '*'});
             if (result.rowCount == 0) {
                 res.end(JSON.stringify({"error":"No results"}))
             }
