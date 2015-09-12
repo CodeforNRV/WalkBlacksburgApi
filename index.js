@@ -141,55 +141,47 @@ dispatcher.onGet("/updateCrime", function(req, res) {
         });
         getres.on("end", function () {
             var body = Buffer.concat(chunks);
-            console.log(body.toString());
-            res.writeHead(200, {'Content-Type': 'application/json','Access-Control-Allow-Origin' : '*'});
-            res.end(body.toString());
+            var data = JSON.parse(body);
+            var crimes = data.incidents;
+            var sql = "";
+            for (var i in crimes) {
+                var crime = crimes[i];
+                // get a pg client from the connection pool
+                sql += "INSERT INTO crime (agencyid, agencyname, casenumber, crimecodeid, crimecode, datereported, description, location, objectid, geom) " +
+                    "VALUES ('"+crime["AgencyID"]+"', '"+crime["AgencyName"]+"', '"+crime["CaseNumber"]+"', '"+crime["CrimeCodeID"]+"', '"+crime["CrimeCode"]+"', '" + crime["DateReported"] +
+                    "', '"+crime["Description"]+"', '"+crime["Location"]+"', "+crime["ObjectID"]+", ST_GeomFromText('POINT(" + crime["Y"] + " " + crime["X"] + ")',3395));";
+            }
+            pg.connect("postgres://" + process.env.PG_USERNAME + ":" + process.env.PG_PASSWORD + "@postgres1.ceipocejvkue.us-west-2.rds.amazonaws.com/blacksburg", function(err, client, done) {
+                var handleError = function(err) {
+                    // no error occurred, continue with the request
+                    if(!err) return false;
+                    if(client){
+                        done(client);
+                    }
+                    res.writeHead(500, {'content-type': 'application/json','Access-Control-Allow-Origin' : '*'});
+                    res.end(JSON.stringify({"error":"There was an error inserting into the database","msg":err}));
+                    return true;
+                };
+                // handle an error from the connection
+                if(handleError(err)) return;
+                //console.log(sql,crime);
+                client.query(sql, function(err, result) {
+                    // handle an error from the query
+                    if(handleError(err)) return;
+                    console.log('inserted');
+                    res.writeHead(200, {'Content-Type': 'application/json','Access-Control-Allow-Origin' : '*'});
+                    res.end(JSON.stringify({"inserted_rows":crimes.length}));
+                    // return the client to the connection pool for other requests to reuse
+                    done();
+
+                });
+            });
+
+
         });
     });
     getreq.end();
 
 /*
-    // get a pg client from the connection pool
-    pg.connect(conString, function(err, client, done) {
-        var handleError = function(err) {
-            // no error occurred, continue with the request
-            if(!err) return false;
-            if(client){
-                done(client);
-            }
-            res.writeHead(500, {'content-type': 'application/json','Access-Control-Allow-Origin' : '*'});
-            res.end(JSON.stringify({"error":"There was an error querying the database"}));
-            return true;
-        };
-        // handle an error from the connection
-        if(handleError(err)) return;
-        var sql = "SELECT * FROM google_route_processing('" + coordinates + "');";
-        client.query(sql, function(err, result) {
-            // handle an error from the query
-            if(handleError(err)) return;
-            // return the client to the connection pool for other requests to reuse
-            done();
-            res.writeHead(200, {'Content-Type': 'application/json','Access-Control-Allow-Origin' : '*'});
-            if (result.rowCount == 0) {
-                res.end(JSON.stringify({"error":"No results"}))
-            }
-            var scores = {'day': 0, 'night': 0};
-            var scoring = {"red": 0.2, "yellow": 1.5, "green": 3};
-            var totalLength = 0;
-            for (var row in result.rows) {
-                var lineLength = result.rows[row]['mylinedistance'];
-                scores['day'] += scoring[result.rows[row]['day_score']]*lineLength;
-                scores['night'] += scoring[result.rows[row]['night_score']]*lineLength;
-                totalLength += lineLength;
-            }
-            var response = {
-                "scores": {
-                    "day": scores['day']/totalLength,
-                    "night": scores['night']/totalLength
-                },
-                "roads": result.rows
-            };
-            res.end(JSON.stringify(response));
-        });
-    });*/
+    */
 });
