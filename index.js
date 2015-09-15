@@ -104,7 +104,7 @@ dispatcher.onGet("/crime", function(req, res) {
             "(SELECT 'FeatureCollection' As type, array_to_json(array_agg(feat)) As features FROM " +
                 "(SELECT 'Feature' As type, ST_AsGeoJSON(ST_Transform(ST_Simplify(geom, 2),4326),5)::json As geometry," +
                     "row_to_json((SELECT l FROM (SELECT agencyname, crimecode, datereported, description, location) As l)) As properties " +
-                    "FROM crime As tbl WHERE datereported BETWEEN $1 AND $2)" +
+                    "FROM crime As tbl WHERE datereported BETWEEN $1 AND $2 AND agencyname = 'Blacksburg Police')" +
                 "AS feat)  " +
             "AS featcoll;";
         client.query(sql, [startdate, enddate], function(err, result) {
