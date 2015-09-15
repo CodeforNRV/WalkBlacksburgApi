@@ -75,7 +75,7 @@ dispatcher.onGet("/crime", function(req, res) {
     var startdate = new Date();
     startdate.setMonth(startdate.getMonth() - 6) //Default start date 6 months prior to today
     if (typeof req.params.startdate != 'undefined') {
-        startdate = new Date(req.params.startdate); //Format should be YYYY-MM-DD
+        startdate = new Date(req.params.startdate);
     }
     if (typeof req.params.enddate != 'undefined') {
         enddate = new Date(req.params.enddate);
@@ -168,10 +168,9 @@ dispatcher.onPost("/score", function(req, res) {
 
 dispatcher.onPost("/updateCrime", function(req, res) {
     //Get the crime data
-    var startdate = req.body.startdate; //eg 08/01/2015
-    var enddate = req.body.enddate;
-    var pw = req.body.passcode;
-    console.log(startdate);
+    var startdate = req.params.startdate; //eg 08/01/2015
+    var enddate = req.params.enddate;
+    var pw = req.params.passcode;
 
     var http = require("http");
 
@@ -179,7 +178,7 @@ dispatcher.onPost("/updateCrime", function(req, res) {
         "method": "GET",
         "hostname": "www.crimemapping.com",
         "port": null,
-        "path": "/GetIncidents.aspx?db=" + startdate + "&de=" + enddate + "&ccs=AR%2CAS%2CBU%2CDP%2CDR%2CDU%2CFR%2CHO%2CVT%2CRO%2CSX%2CTH%2CVA%2CVB%2CWE&xmin=-8954791.68972816&ymin=4471101.623740454&xmax=-8948265.878438141&ymax=4472267.288421833",
+        "path": "/GetIncidents.aspx?db=" + startdate + "&de=" + enddate + "&ccs=AR%2CAS%2CBU%2CDP%2CDR%2CDU%2CFR%2CHO%2CVT%2CRO%2CSX%2CTH%2CVA%2CVB%2CWE&xmin=-8987085.992643457&ymin=4456012.59895246&xmax=-8916763.926621191&ymax=4481504.347885531",
         "headers": {}
     };
 
@@ -198,7 +197,7 @@ dispatcher.onPost("/updateCrime", function(req, res) {
                 // get a pg client from the connection pool
                 sql += "INSERT INTO crime (agencyid, agencyname, casenumber, crimecodeid, crimecode, datereported, description, location, objectid, geom) " +
                     "VALUES ('"+crime["AgencyID"]+"', '"+crime["AgencyName"]+"', '"+crime["CaseNumber"]+"', '"+crime["CrimeCodeID"]+"', '"+crime["CrimeCode"]+"', '" + crime["DateReported"] +
-                    "', '"+crime["Description"]+"', '"+crime["Location"]+"', "+crime["ObjectID"]+", ST_GeomFromText('POINT(" + crime["Y"] + " " + crime["X"] + ")',3395));";
+                    "', '"+crime["Description"]+"', '"+crime["Location"]+"', "+crime["ObjectID"]+", ST_GeomFromText('POINT(" + crime["Y"] + " " + crime["X"] + ")',3857));";
             }
             pg.connect("postgres://crimeuser:" + pw + "@postgres1.ceipocejvkue.us-west-2.rds.amazonaws.com/blacksburg", function(err, client, done) {
                 var handleError = function(err) {
@@ -213,7 +212,6 @@ dispatcher.onPost("/updateCrime", function(req, res) {
                 };
                 // handle an error from the connection
                 if(handleError(err)) return;
-                //console.log(sql,crime);
                 client.query(sql, function(err, result) {
                     // handle an error from the query
                     if(handleError(err)) return;
